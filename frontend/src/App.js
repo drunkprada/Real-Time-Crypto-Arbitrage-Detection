@@ -13,7 +13,10 @@ function App() {
 
   useEffect(() => {
     const connectWebSocket = () => {
-      const ws = new WebSocket('ws://localhost:8000/ws/live');
+      // Dynamically use the current hostname so this works perfectly on local networks or simple port forwards
+      const host = window.location.hostname;
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const ws = new WebSocket(`${wsProtocol}//${host}:8000/ws/live`);
       wsRef.current = ws;
 
       ws.onopen = () => {
@@ -65,22 +68,26 @@ function App() {
       </header>
 
       <main className="dashboard">
-        <div className="panel-grid">
-          <RateTable
-            rates={data?.rates}
-            currencies={data?.currencies}
-            previousRates={previousRates}
-            activeCycle={data?.arbitrage?.active_cycle || []}
-          />
-          <ArbitragePanel
-            opportunities={data?.arbitrage?.opportunities || []}
-          />
-          <AlgorithmLog
-            logs={data?.algorithm_log || []}
-          />
-          <PortfolioTracker
-            portfolio={data?.portfolio}
-          />
+        <div className="dashboard-columns">
+          <div className="dashboard-column left-column">
+            <RateTable
+              rates={data?.rates}
+              currencies={data?.currencies}
+              previousRates={previousRates}
+              activeCycle={data?.arbitrage?.active_cycle || []}
+            />
+            <AlgorithmLog
+              logs={data?.algorithm_log || []}
+            />
+          </div>
+          <div className="dashboard-column right-column">
+            <ArbitragePanel
+              opportunities={data?.arbitrage?.opportunities || []}
+            />
+            <PortfolioTracker
+              portfolio={data?.portfolio}
+            />
+          </div>
         </div>
       </main>
     </div>

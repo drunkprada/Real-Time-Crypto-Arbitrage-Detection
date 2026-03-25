@@ -4,17 +4,7 @@ A full-stack academic project demonstrating real-time cryptocurrency arbitrage d
 
 ## Architecture
 
-```
-┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│   Price Feed    │────▶│  Graph Builder   │────▶│  Bellman-Ford   │
-│  (Simulated)    │     │  (-log weights)  │     │  (Cycle Detect) │
-└─────────────────┘     └──────────────────┘     └─────────────────┘
-                                                          │
-        ┌──────────────────┐                              ▼
-        │  React Frontend  │◀────WebSocket────│  FastAPI Backend  │
-        │   (Dashboard)    │                  │  (Real-time API)  │
-        └──────────────────┘                  └───────────────────┘
-```
+![System Design Architecture](system%20design.jpeg)
 
 ## How It Works
 
@@ -65,53 +55,62 @@ The **Bellman-Ford algorithm** can detect negative cycles in O(V×E) time, makin
 
 ## Setup & Running
 
-### Prerequisites
+### ⚡ Prerequisites
 
-- Python 3.8 or higher
-- Node.js 16 or higher
-- npm or yarn
+Before you begin, ensure you have the following installed on your system:
+- **Python 3.8+**
+- **Node.js 16+**
+- **npm** or **yarn**
 
-### Backend Setup
+### 🟣 Backend Setup (FastAPI)
 
+1. Open a terminal and navigate to the backend directory:
 ```bash
-# Navigate to backend directory
 cd backend
+```
 
-# Create virtual environment (recommended)
+2. Create and activate a pristine virtual environment (highly recommended):
+```bash
+# Create virtual environment
 python -m venv venv
 
-# Activate virtual environment
-# On Windows:
-venv\Scripts\activate
-# On macOS/Linux:
+# Activate on Windows:
+.\venv\Scripts\activate
+
+# Activate on macOS/Linux:
 source venv/bin/activate
+```
 
-# Install dependencies
+3. Install the required Python packages:
+```bash
 pip install -r requirements.txt
+```
 
-# Run the server
+4. Boot up the real-time simulation server:
+```bash
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
+*(The WebSocket feed will now be broadcasting on `ws://localhost:8000/ws/live`)*
 
-The API will be available at:
-- REST API: http://localhost:8000
-- API Docs: http://localhost:8000/docs
-- WebSocket: ws://localhost:8000/ws/live
+### 🟢 Frontend Setup (React)
 
-### Frontend Setup
-
+1. Open a **new** terminal window and navigate to the frontend directory:
 ```bash
-# Navigate to frontend directory
 cd frontend
-
-# Install dependencies
-npm install
-
-# Start development server
-npm start
 ```
 
-The frontend will open at http://localhost:3000
+2. Install the necessary node modules:
+```bash
+npm install
+```
+
+3. Start the stunning UI dashboard:
+```bash
+npm run dev
+# or
+npm start
+```
+*(The dashboard will automatically open in your browser at `http://localhost:3000`)*
 
 ## API Endpoints
 

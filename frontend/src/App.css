@@ -1,340 +1,662 @@
-/* App.css - Main Stylesheet */
-/* Color Palette:
-   - Background: #0d1117
-   - Panel Background: #161b22
-   - Headers: #f0ece0 (Playfair Display)
-   - Body Text: #c9c4b8 (DM Sans)
-   - Large Numbers: #f0ece0 (DM Sans 300)
-   - Positive: #a3e635
-   - Negative: #f87171
-   - Panel Border: rgba(255,255,255,0.08)
-   - Divider: rgba(255,255,255,0.06)
-*/
+/* App.css - Elite Cyberpunk Dashboard (Fixed Tile Proportions) */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root {
+  --bg-main: #020205;
+  /* Deep organic black */
+  --bg-panel: rgba(10, 10, 18, 0.45);
+  --bg-panel-hover: rgba(16, 16, 28, 0.65);
+
+  --text-heading: #ffffff;
+  --text-body: #a1a1aa;
+  --text-muted: #52525b;
+
+  --color-primary: #0ea5e9;
+  /* Electric Cyan */
+  --color-secondary: #8b5cf6;
+  /* Neon Purple */
+  --color-positive: #10b981;
+  /* Cyber Green */
+  --color-positive-bg: rgba(16, 185, 129, 0.2);
+  --color-positive-glow: rgba(16, 185, 129, 0.5);
+
+  --color-negative: #f43f5e;
+  /* Cyber Red */
+  --color-negative-bg: rgba(244, 63, 94, 0.2);
+  --color-negative-glow: rgba(244, 63, 94, 0.5);
+
+  --border-glass: rgba(255, 255, 255, 0.06);
+  --border-glass-highlight: rgba(255, 255, 255, 0.15);
+
+  --font-sans: 'Outfit', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-main);
+  font-family: var(--font-sans);
+  color: var(--text-body);
+  -webkit-font-smoothing: antialiased;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+body::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(14, 165, 233, 0.12), transparent 30%),
+    radial-gradient(ellipse at 70% 80%, rgba(139, 92, 246, 0.12), transparent 30%),
+    radial-gradient(ellipse at 50% 50%, rgba(16, 185, 129, 0.08), transparent 40%);
+  animation: bg-drift 15s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: screen;
+}
+
+@keyframes bg-drift {
+  0% {
+    transform: rotate(0deg) scale(1) translate(0px, 0px);
+  }
+
+  50% {
+    transform: rotate(5deg) scale(1.1) translate(2%, 3%);
+  }
+
+  100% {
+    transform: rotate(-5deg) scale(1.05) translate(-2%, -3%);
+  }
+}
+
+body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 30px 30px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.8;
+}
 
 .app {
-  min-height: 100vh;
-  background-color: #0d1117;
-  padding: 24px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 24px;
+  max-width: 1600px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+  gap: 16px;
 }
 
 /* Header */
 .app-header {
+  flex-shrink: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 12px 24px;
+  background: rgba(5, 5, 10, 0.75);
+  border: 1px solid var(--border-glass);
+  border-bottom: 2px solid rgba(14, 165, 233, 0.3);
+  border-radius: 12px;
+  backdrop-filter: blur(24px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .app-header h1 {
-  font-family: 'Playfair Display', serif;
-  font-size: 24px;
-  font-weight: 500;
-  color: #f0ece0;
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(120deg, #fff, #a5b4fc, #0ea5e9, #34d399, #fff);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine 6s linear infinite;
+  letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-shadow: 0 0 30px rgba(14, 165, 233, 0.4);
+}
+
+@keyframes shine {
+  to {
+    background-position: 200% center;
+  }
+}
+
+.app-header h1::before {
+  content: '⚡';
+  font-size: 20px;
+  -webkit-text-fill-color: initial;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
 }
 
 .connection-status {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
   padding: 6px 12px;
-  border-radius: 4px;
+  border-radius: 8px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .connection-status.connected {
-  background-color: rgba(163, 230, 53, 0.15);
-  color: #a3e635;
+  color: var(--color-positive);
+  border-color: rgba(16, 185, 129, 0.3);
 }
 
-.connection-status.disconnected {
-  background-color: rgba(248, 113, 113, 0.15);
-  color: #f87171;
+.connection-status.connected::before {
+  content: '';
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-positive);
+  box-shadow: 0 0 12px var(--color-positive);
+  animation: heartbeat-dot 1.5s ease-out infinite;
 }
 
-/* Dashboard Grid */
+@keyframes heartbeat-dot {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  15% {
+    transform: scale(1.3);
+    opacity: 0.8;
+  }
+
+  30% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  45% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* Dashboard Columns */
 .dashboard {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.dashboard-columns {
+  display: flex;
+  gap: 16px;
   width: 100%;
+  height: 100%;
 }
 
-.panel-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: auto auto;
-  gap: 20px;
+.left-column {
+  flex: 1.4;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
 }
 
-/* Panel Base Styles */
+.right-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+}
+
+/* Panels */
 .panel {
-  background-color: #161b22;
-  border: 0.5px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 24px;
-  min-height: 300px;
+  background: linear-gradient(150deg, rgba(20, 20, 35, 0.4), rgba(5, 5, 15, 0.7));
+  border: 1px solid var(--border-glass);
+  border-radius: 16px;
+  padding: 16px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  /* Force strict containment */
+}
+
+/* Fixed Sizes via Flex-Basis. Formula: calc(PERCENT% - half-gap) */
+.left-column>.panel:first-child {
+  flex: 0 0 calc(60% - 8px);
+  border-left: 3px solid rgba(14, 165, 233, 0.6);
+}
+
+.left-column>.panel:last-child {
+  flex: 0 0 calc(40% - 8px);
+  border-left: 3px solid rgba(139, 92, 246, 0.6);
+}
+
+/* Give Arbitrage exactly 40% and Portfolio exactly 60% */
+.right-column>.panel:first-child {
+  flex: 0 0 calc(40% - 8px);
+  border-left: 3px solid rgba(244, 63, 94, 0.6);
+}
+
+.right-column>.panel:last-child {
+  flex: 0 0 calc(60% - 8px);
+  border-left: 3px solid rgba(16, 185, 129, 0.6);
 }
 
 .panel-header {
-  font-family: 'Playfair Display', serif;
-  font-size: 18px;
-  font-weight: 500;
-  color: #f0ece0;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-glass);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  position: relative;
 }
 
-/* Rate Table Panel */
+.panel-header::after {
+  content: '';
+  height: 2px;
+  width: 40px;
+  background: linear-gradient(90deg, #fff, transparent);
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  box-shadow: 0 0 10px #fff;
+}
+
+/* Rate Table */
+.rate-table-container {
+  flex: 1;
+  /* Stretch within strictly sized panel */
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: auto;
+  border-radius: 6px;
+}
+
+/* Note: The RateTable component returns <table className="rate-table">. Since this div isn't generated by the component, we rely on standard table layout if rate-table-container is missing */
+
+/* The RateTable is inside the panel, it will scroll implicitly if we put overflow on the panel body, but panel has overflow: hidden. 
+Let's force the table wrapper */
 .rate-table {
   width: 100%;
-  border-collapse: collapse;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
+  border-collapse: separate;
+  border-spacing: 0 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
 }
 
 .rate-table th {
-  color: #f0ece0;
-  font-weight: 500;
-  padding: 8px 12px;
-  text-align: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 6px;
+  font-size: 10px;
+  letter-spacing: 1px;
+  position: sticky;
+  top: 0;
+  background: rgba(10, 10, 18, 0.9);
+  z-index: 10;
 }
 
 .rate-table th:first-child {
   text-align: left;
 }
 
+.rate-table tbody tr {
+  background-color: rgba(255, 255, 255, 0.01);
+  border-radius: 6px;
+}
+
 .rate-table td {
-  padding: 8px 12px;
+  padding: 6px;
   text-align: center;
-  color: #c9c4b8;
-  transition: background-color 0.4s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 .rate-table td:first-child {
   text-align: left;
-  font-weight: 500;
-  color: #f0ece0;
-}
-
-.rate-table td.self {
-  color: rgba(201, 196, 184, 0.3);
+  font-weight: 700;
+  color: #fff;
 }
 
 .rate-table td.changed {
-  animation: flash 0.4s ease;
+  animation: data-pulse-cyber 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #fff;
+  font-weight: 700;
 }
 
 .rate-table td.arbitrage-cell {
-  background-color: rgba(163, 230, 53, 0.12);
+  background-color: var(--color-positive-bg);
+  color: #fff;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(16, 185, 129, 1);
+  border-radius: 6px;
 }
 
-@keyframes flash {
+@keyframes data-pulse-cyber {
   0% {
-    background-color: rgba(240, 236, 224, 0.2);
+    background-color: rgba(14, 165, 233, 0.5);
+    transform: scale(1.1);
   }
+
   100% {
     background-color: transparent;
+    transform: scale(1);
   }
 }
 
 /* Arbitrage Panel */
 .arbitrage-list {
   list-style: none;
+  flex: 1;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .arbitrage-item {
   padding: 12px;
   margin-bottom: 8px;
-  background-color: rgba(255, 255, 255, 0.02);
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  /* Compressed for fit */
+  background: linear-gradient(135deg, rgba(20, 20, 30, 0.6), rgba(10, 10, 15, 0.8));
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 2px solid var(--color-negative);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .arbitrage-path {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  color: #f0ece0;
-  margin-bottom: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 6px 10px;
+  border-radius: 4px;
+  display: inline-block;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .arbitrage-details {
   display: flex;
-  gap: 16px;
-  font-family: 'DM Sans', sans-serif;
+  justify-content: space-between;
   font-size: 12px;
 }
 
 .arbitrage-details span {
-  color: #c9c4b8;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.arbitrage-details span strong {
+  font-size: 9px;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
 .profit-positive {
-  color: #a3e635 !important;
+  color: var(--color-positive) !important;
+  font-weight: 700;
+  text-shadow: 0 0 10px var(--color-positive-glow);
 }
 
 .profit-negative {
-  color: #f87171 !important;
+  color: var(--color-negative) !important;
+  font-weight: 700;
 }
 
 .no-opportunities {
-  color: rgba(201, 196, 184, 0.5);
-  font-style: italic;
+  color: var(--text-muted);
+  font-size: 13px;
   text-align: center;
-  padding: 40px 0;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px dashed var(--border-glass);
 }
 
-/* Algorithm Log Panel */
+/* Algorithm Log */
 .algorithm-log {
-  font-family: monospace;
-  font-size: 12px;
-  max-height: 250px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
+  background-color: #030306;
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  box-shadow: inset 0 5px 25px rgba(0,0,0,0.8);
 }
 
 .log-entry {
   padding: 6px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-  color: #c9c4b8;
-}
-
-.log-entry:last-child {
-  border-bottom: none;
+  color: #e2e8f0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: block;
+  line-height: 1.6;
 }
 
 .log-timestamp {
-  color: rgba(201, 196, 184, 0.5);
-  margin-right: 8px;
-}
-
-.log-edges {
-  color: #c9c4b8;
-  margin-right: 8px;
+  color: #818cf8;
+  font-size: 10px;
 }
 
 .log-cycle-found {
-  color: #a3e635;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 10px;
 }
 
-.log-cycle-not-found {
-  color: rgba(201, 196, 184, 0.5);
-}
-
-.log-relaxed {
-  color: rgba(201, 196, 184, 0.4);
-  font-size: 11px;
-  margin-left: 16px;
-  display: block;
-}
-
-/* Portfolio Panel */
+/* Portfolio Tracker */
 .portfolio-balance {
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 300;
+  font-family: var(--font-sans);
   font-size: 36px;
-  color: #f0ece0;
-  margin-bottom: 8px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 4px;
+  background: linear-gradient(100deg, #ffffff 0%, #34d399 50%, #10b981 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine 8s linear infinite;
 }
 
 .portfolio-pnl {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 16px;
-  margin-bottom: 4px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .portfolio-stats {
   display: flex;
-  gap: 24px;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .stat-item {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  color: #c9c4b8;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
 }
 
 .stat-value {
-  font-weight: 500;
-  color: #f0ece0;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
 }
 
-/* Trades Table */
 .trades-section {
-  margin-top: 20px;
+  margin-top: 12px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .trades-title {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13px;
-  color: rgba(201, 196, 184, 0.6);
-  margin-bottom: 12px;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.trades-scroll-container {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .trades-table {
   width: 100%;
+  font-family: var(--font-mono);
+  font-size: 11px;
   border-collapse: collapse;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
 }
 
 .trades-table th {
-  color: rgba(201, 196, 184, 0.5);
-  font-weight: 400;
-  padding: 8px 8px;
   text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+  font-size: 9px;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.4);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .trades-table td {
-  padding: 8px 8px;
-  color: #c9c4b8;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  color: var(--text-body);
 }
 
 .trades-table .profit {
-  color: #a3e635;
+  color: var(--color-positive);
+  text-align: right;
+  font-weight: 700;
 }
 
 .trades-table .loss {
-  color: #f87171;
+  color: var(--color-negative);
+  text-align: right;
+  font-weight: 700;
 }
 
-/* Scrollbar Styling */
-.algorithm-log::-webkit-scrollbar {
+/* Sci-Fi Neon Scrollbars */
+::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 
-.algorithm-log::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 3px;
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
 }
 
-.algorithm-log::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, rgba(14, 165, 233, 0.4), rgba(139, 92, 246, 0.4));
+  border-radius: 4px;
 }
 
-.algorithm-log::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, rgba(14, 165, 233, 0.8), rgba(139, 92, 246, 0.8));
 }
 
-/* Empty State */
-.empty-state {
-  color: rgba(201, 196, 184, 0.4);
-  text-align: center;
-  padding: 40px 0;
-  font-style: italic;
-}
-
-/* Responsive */
 @media (max-width: 1200px) {
-  .panel-grid {
-    grid-template-columns: 1fr;
+
+  body,
+  .app {
+    height: auto;
+    overflow: auto;
+    min-height: 100vh;
+  }
+
+  .dashboard-columns {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .left-column,
+  .right-column {
+    min-height: auto;
+    width: 100%;
+  }
+
+  .panel {
+    height: auto;
+    min-height: 350px;
+    flex: none !important;
   }
 }
