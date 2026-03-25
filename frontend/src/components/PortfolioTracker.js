@@ -59,26 +59,28 @@ function PortfolioTracker({ portfolio }) {
       {portfolio.recent_trades && portfolio.recent_trades.length > 0 && (
         <div className="trades-section">
           <div className="trades-title">Recent Trades</div>
-          <table className="trades-table">
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>Path</th>
-                <th>P/L</th>
-              </tr>
-            </thead>
-            <tbody>
-              {portfolio.recent_trades.slice().reverse().map((trade, index) => (
-                <tr key={index}>
-                  <td>{trade.timestamp}</td>
-                  <td>{formatPath(trade.path)}</td>
-                  <td className={trade.usd_gained >= 0 ? 'profit' : 'loss'}>
-                    {trade.usd_gained >= 0 ? '+' : ''}{formatCurrency(trade.usd_gained)}
-                  </td>
+          <div className="trades-scroll-container" style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+            <table className="trades-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Path</th>
+                  <th>P/L</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {portfolio.recent_trades.slice().reverse().map((trade, index) => (
+                  <tr key={index}>
+                    <td>{trade.timestamp}</td>
+                    <td>{formatPath(trade.path)}</td>
+                    <td className={trade.usd_gained >= 0 ? 'profit' : 'loss'}>
+                      {trade.usd_gained >= 0 ? '+' : ''}{formatCurrency(trade.usd_gained)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
