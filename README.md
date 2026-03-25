@@ -4,17 +4,7 @@ A full-stack academic project demonstrating real-time cryptocurrency arbitrage d
 
 ## Architecture
 
-```
-┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│   Price Feed    │────▶│  Graph Builder   │────▶│  Bellman-Ford   │
-│  (Simulated)    │     │  (-log weights)  │     │  (Cycle Detect) │
-└─────────────────┘     └──────────────────┘     └─────────────────┘
-                                                          │
-        ┌──────────────────┐                              ▼
-        │  React Frontend  │◀────WebSocket────│  FastAPI Backend  │
-        │   (Dashboard)    │                  │  (Real-time API)  │
-        └──────────────────┘                  └───────────────────┘
-```
+![System Design Architecture](system%20design.jpg)
 
 ## How It Works
 
