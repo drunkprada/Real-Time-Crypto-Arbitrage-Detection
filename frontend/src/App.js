@@ -13,7 +13,10 @@ function App() {
 
   useEffect(() => {
     const connectWebSocket = () => {
-      const ws = new WebSocket('ws://localhost:8000/ws/live');
+      // Dynamically use the current hostname so this works perfectly on local networks or simple port forwards
+      const host = window.location.hostname;
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const ws = new WebSocket(`${wsProtocol}//${host}:8000/ws/live`);
       wsRef.current = ws;
 
       ws.onopen = () => {
