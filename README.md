@@ -4,7 +4,7 @@ A full-stack academic project demonstrating real-time cryptocurrency arbitrage d
 
 ## Architecture
 
-![System Design Architecture](system%20design.jpg)
+![System Design Architecture](system%20design.jpeg)
 
 ## How It Works
 
