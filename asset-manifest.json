@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/Real-Time-Crypto-Arbitrage-Detection/static/css/main.c71145fa.css",
+    "main.js": "/Real-Time-Crypto-Arbitrage-Detection/static/js/main.498c6e08.js",
+    "index.html": "/Real-Time-Crypto-Arbitrage-Detection/index.html",
+    "main.c71145fa.css.map": "/Real-Time-Crypto-Arbitrage-Detection/static/css/main.c71145fa.css.map",
+    "main.498c6e08.js.map": "/Real-Time-Crypto-Arbitrage-Detection/static/js/main.498c6e08.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.c71145fa.css",
+    "static/js/main.498c6e08.js"
+  ]
+}
