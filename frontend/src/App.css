@@ -1,0 +1,340 @@
+/* App.css - Main Stylesheet */
+/* Color Palette:
+   - Background: #0d1117
+   - Panel Background: #161b22
+   - Headers: #f0ece0 (Playfair Display)
+   - Body Text: #c9c4b8 (DM Sans)
+   - Large Numbers: #f0ece0 (DM Sans 300)
+   - Positive: #a3e635
+   - Negative: #f87171
+   - Panel Border: rgba(255,255,255,0.08)
+   - Divider: rgba(255,255,255,0.06)
+*/
+
+.app {
+  min-height: 100vh;
+  background-color: #0d1117;
+  padding: 24px;
+}
+
+/* Header */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.app-header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 500;
+  color: #f0ece0;
+}
+
+.connection-status {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.connection-status.connected {
+  background-color: rgba(163, 230, 53, 0.15);
+  color: #a3e635;
+}
+
+.connection-status.disconnected {
+  background-color: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+
+/* Dashboard Grid */
+.dashboard {
+  width: 100%;
+}
+
+.panel-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: auto auto;
+  gap: 20px;
+}
+
+/* Panel Base Styles */
+.panel {
+  background-color: #161b22;
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 24px;
+  min-height: 300px;
+}
+
+.panel-header {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #f0ece0;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Rate Table Panel */
+.rate-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+}
+
+.rate-table th {
+  color: #f0ece0;
+  font-weight: 500;
+  padding: 8px 12px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.rate-table th:first-child {
+  text-align: left;
+}
+
+.rate-table td {
+  padding: 8px 12px;
+  text-align: center;
+  color: #c9c4b8;
+  transition: background-color 0.4s ease;
+}
+
+.rate-table td:first-child {
+  text-align: left;
+  font-weight: 500;
+  color: #f0ece0;
+}
+
+.rate-table td.self {
+  color: rgba(201, 196, 184, 0.3);
+}
+
+.rate-table td.changed {
+  animation: flash 0.4s ease;
+}
+
+.rate-table td.arbitrage-cell {
+  background-color: rgba(163, 230, 53, 0.12);
+}
+
+@keyframes flash {
+  0% {
+    background-color: rgba(240, 236, 224, 0.2);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* Arbitrage Panel */
+.arbitrage-list {
+  list-style: none;
+}
+
+.arbitrage-item {
+  padding: 12px;
+  margin-bottom: 8px;
+  background-color: rgba(255, 255, 255, 0.02);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.arbitrage-path {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #f0ece0;
+  margin-bottom: 8px;
+}
+
+.arbitrage-details {
+  display: flex;
+  gap: 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+}
+
+.arbitrage-details span {
+  color: #c9c4b8;
+}
+
+.profit-positive {
+  color: #a3e635 !important;
+}
+
+.profit-negative {
+  color: #f87171 !important;
+}
+
+.no-opportunities {
+  color: rgba(201, 196, 184, 0.5);
+  font-style: italic;
+  text-align: center;
+  padding: 40px 0;
+}
+
+/* Algorithm Log Panel */
+.algorithm-log {
+  font-family: monospace;
+  font-size: 12px;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.log-entry {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  color: #c9c4b8;
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+.log-timestamp {
+  color: rgba(201, 196, 184, 0.5);
+  margin-right: 8px;
+}
+
+.log-edges {
+  color: #c9c4b8;
+  margin-right: 8px;
+}
+
+.log-cycle-found {
+  color: #a3e635;
+}
+
+.log-cycle-not-found {
+  color: rgba(201, 196, 184, 0.5);
+}
+
+.log-relaxed {
+  color: rgba(201, 196, 184, 0.4);
+  font-size: 11px;
+  margin-left: 16px;
+  display: block;
+}
+
+/* Portfolio Panel */
+.portfolio-balance {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  font-size: 36px;
+  color: #f0ece0;
+  margin-bottom: 8px;
+}
+
+.portfolio-pnl {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.portfolio-stats {
+  display: flex;
+  gap: 24px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.stat-item {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #c9c4b8;
+}
+
+.stat-value {
+  font-weight: 500;
+  color: #f0ece0;
+}
+
+/* Trades Table */
+.trades-section {
+  margin-top: 20px;
+}
+
+.trades-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: rgba(201, 196, 184, 0.6);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.trades-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+}
+
+.trades-table th {
+  color: rgba(201, 196, 184, 0.5);
+  font-weight: 400;
+  padding: 8px 8px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.trades-table td {
+  padding: 8px 8px;
+  color: #c9c4b8;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.trades-table .profit {
+  color: #a3e635;
+}
+
+.trades-table .loss {
+  color: #f87171;
+}
+
+/* Scrollbar Styling */
+.algorithm-log::-webkit-scrollbar {
+  width: 6px;
+}
+
+.algorithm-log::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 3px;
+}
+
+.algorithm-log::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.algorithm-log::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Empty State */
+.empty-state {
+  color: rgba(201, 196, 184, 0.4);
+  text-align: center;
+  padding: 40px 0;
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .panel-grid {
+    grid-template-columns: 1fr;
+  }
+}
