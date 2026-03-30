@@ -325,6 +325,18 @@ def get_portfolio_state() -> Dict:
     }
 
 
+def reset_portfolio() -> Dict:
+    """
+    Reset the portfolio to its initial state.
+    Called at the start of each new dashboard session.
+    """
+    portfolio.reset()
+    return {
+        "status": "reset",
+        "starting_balance": Portfolio.STARTING_BALANCE
+    }
+
+
 def execute_arbitrage_trade(path: List[str], net_profit_pct: float) -> Optional[Dict]:
     """
     Execute a trade and return the result as a dictionary.

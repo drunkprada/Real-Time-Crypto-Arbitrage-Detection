@@ -20,7 +20,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from price_feed import get_rates, get_active_arbitrage_cycle, CURRENCIES
 from graph import build_graph
 from bellman_ford import find_arbitrage, get_algorithm_history, ArbitrageOpportunity
-from portfolio import get_portfolio_state, execute_arbitrage_trade
+from portfolio import get_portfolio_state, execute_arbitrage_trade, reset_portfolio
 
 
 # =============================================================================
@@ -221,6 +221,15 @@ async def get_portfolio():
         Portfolio metrics including balance, P&L, and recent trades
     """
     return get_portfolio_state()
+
+
+@app.post("/api/portfolio/reset")
+async def reset_portfolio_endpoint():
+    """
+    Reset the portfolio to its initial $10,000 state.
+    Called by the frontend at the start of each new session.
+    """
+    return reset_portfolio()
 
 
 @app.get("/api/history")

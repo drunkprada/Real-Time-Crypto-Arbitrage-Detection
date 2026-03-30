@@ -1,399 +1,343 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
+// ─── Rate Table ──────────────────────────────────────────────────────────────
+
 function RateTable({ rates, currencies, previousRates, activeCycle }) {
   const [changedCells, setChangedCells] = useState({});
+  const [upCells,      setUpCells]      = useState({});
   const timeoutRefs = useRef({});
 
   useEffect(() => {
     if (!rates || !previousRates || !currencies) return;
-
-    const newChanges = {};
-
+    const chg = {}, ups = {};
     currencies.forEach(from => {
       currencies.forEach(to => {
         if (from === to) return;
-
-        const currentRate = rates[from]?.[to];
-        const prevRate = previousRates[from]?.[to];
-
-        if (currentRate !== undefined && prevRate !== undefined) {
-          if (Math.abs(currentRate - prevRate) > 0.0000001) {
-            const key = `${from}-${to}`;
-            newChanges[key] = true;
-
-            if (timeoutRefs.current[key]) {
-              clearTimeout(timeoutRefs.current[key]);
-            }
-
-            timeoutRefs.current[key] = setTimeout(() => {
-              setChangedCells(prev => {
-                const updated = { ...prev };
-                delete updated[key];
-                return updated;
-              });
-            }, 400);
-          }
+        const cur  = rates[from]?.[to];
+        const prev = previousRates[from]?.[to];
+        if (cur !== undefined && prev !== undefined && Math.abs(cur - prev) > 0.0000001) {
+          const k = `${from}-${to}`;
+          chg[k] = true;
+          if (cur > prev) ups[k] = true;
+          if (timeoutRefs.current[k]) clearTimeout(timeoutRefs.current[k]);
+          timeoutRefs.current[k] = setTimeout(() => {
+            setChangedCells(p => { const u = { ...p }; delete u[k]; return u; });
+            setUpCells(p      => { const u = { ...p }; delete u[k]; return u; });
+          }, 900);
         }
       });
     });
-
-    if (Object.keys(newChanges).length > 0) {
-      setChangedCells(prev => ({ ...prev, ...newChanges }));
+    if (Object.keys(chg).length) {
+      setChangedCells(p => ({ ...p, ...chg }));
+      setUpCells(p      => ({ ...p, ...ups }));
     }
   }, [rates, previousRates, currencies]);
 
-  useEffect(() => {
-    return () => {
-      Object.values(timeoutRefs.current).forEach(clearTimeout);
-    };
-  }, []);
+  useEffect(() => () => Object.values(timeoutRefs.current).forEach(clearTimeout), []);
 
-  const isInArbitrageCycle = (from, to) => {
-    if (!activeCycle || activeCycle.length < 2) return false;
-
+  // Returns position index in the arbitrage cycle, or -1 if not part of it.
+  // Used to stagger the traveling-wave animation via CSS --step variable.
+  const getCycleStep = (from, to) => {
+    if (!activeCycle || activeCycle.length < 2) return -1;
     for (let i = 0; i < activeCycle.length - 1; i++) {
-      if (activeCycle[i] === from && activeCycle[i + 1] === to) {
-        return true;
-      }
+      if (activeCycle[i] === from && activeCycle[i + 1] === to) return i;
     }
-    if (activeCycle[activeCycle.length - 1] === from && activeCycle[0] === to) {
-      return true;
-    }
-    return false;
+    if (activeCycle[activeCycle.length - 1] === from && activeCycle[0] === to)
+      return activeCycle.length - 1;
+    return -1;
   };
 
-  const formatRate = (rate) => {
-    if (rate === undefined || rate === null) return '-';
-    if (rate >= 1000) return rate.toFixed(2);
-    if (rate >= 1) return rate.toFixed(4);
-    if (rate >= 0.01) return rate.toFixed(6);
-    return rate.toExponential(4);
+  const fmt = (r) => {
+    if (r == null)   return '—';
+    if (r >= 1000)   return r.toFixed(2);
+    if (r >= 1)      return r.toFixed(4);
+    if (r >= 0.01)   return r.toFixed(6);
+    return r.toExponential(3);
   };
 
-  if (!rates || !currencies) {
-    return (
-      <div className="panel">
-        <h2 className="panel-header">Live Exchange Rates</h2>
-        <div className="empty-state">Waiting for data...</div>
+  if (!rates || !currencies) return (
+    <div className="panel panel-rates">
+      <div className="panel-head">
+        <span className="panel-label">EXCHANGE RATES</span>
       </div>
-    );
-  }
+      <div className="empty-state">Awaiting feed…</div>
+    </div>
+  );
 
   return (
-    <div className="panel">
-      <h2 className="panel-header">Live Exchange Rates</h2>
-      <table className="rate-table">
-        <thead>
-          <tr>
-            <th></th>
-            {currencies.map(currency => (
-              <th key={currency}>{currency}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {currencies.map(from => (
-            <tr key={from}>
-              <td>{from}</td>
-              {currencies.map(to => {
-                const key = `${from}-${to}`;
-                const rate = rates[from]?.[to];
-                const isChanged = changedCells[key];
-                const isSelf = from === to;
-                const isArbitrage = isInArbitrageCycle(from, to);
-
-                let className = '';
-                if (isSelf) className = 'self';
-                else if (isChanged) className = 'changed';
-                if (isArbitrage) className += ' arbitrage-cell';
-
-                return (
-                  <td key={to} className={className.trim()}>
-                    {isSelf ? '1.0000' : formatRate(rate)}
-                  </td>
-                );
-              })}
+    <div className="panel panel-rates">
+      <div className="panel-head">
+        <span className="panel-label">EXCHANGE RATES</span>
+        <span className="panel-sub">{currencies.length}×{currencies.length} matrix</span>
+      </div>
+      <div className="rate-scroll">
+        <table className="rtable">
+          <thead>
+            <tr>
+              <th></th>
+              {currencies.map(c => <th key={c}>{c}</th>)}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {currencies.map(from => (
+              <tr key={from}>
+                <td className="rh">{from}</td>
+                {currencies.map(to => {
+                  const k    = `${from}-${to}`;
+                  const self = from === to;
+                  const step = getCycleStep(from, to);
+                  const arb  = step >= 0;
+                  const cls  = self ? 'cs'
+                    : arb ? 'ca'
+                    : changedCells[k] ? (upCells[k] ? 'cu' : 'cd')
+                    : '';
+                  return (
+                    <td key={to} className={cls}
+                      style={arb ? { '--step': step } : undefined}>
+                      {self ? '1.0000' : fmt(rates[from]?.[to])}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
+
+// ─── Arbitrage Panel ─────────────────────────────────────────────────────────
 
 function ArbitragePanel({ opportunities }) {
-  const formatPath = (path) => {
-    if (!path || path.length === 0) return '';
-    return path.join(' -> ');
-  };
-
-  const formatPercent = (value) => {
-    if (value === undefined || value === null) return '-';
-    return `${value >= 0 ? '+' : ''}${value.toFixed(4)}%`;
-  };
-
-  if (!opportunities || opportunities.length === 0) {
-    return (
-      <div className="panel">
-        <h2 className="panel-header">Arbitrage Opportunities</h2>
-        <div className="no-opportunities">No opportunities detected</div>
-      </div>
-    );
-  }
+  const pct = (v) => v == null ? '—' : `${v >= 0 ? '+' : ''}${v.toFixed(4)}%`;
 
   return (
-    <div className="panel">
-      <h2 className="panel-header">Arbitrage Opportunities</h2>
-      <ul className="arbitrage-list">
-        {opportunities.map((opp, index) => {
-          const isProfitable = opp.net_profit_pct > 0;
-
-          return (
-            <li key={index} className="arbitrage-item">
-              <div className="arbitrage-path">
-                {formatPath(opp.path)}
-              </div>
-              <div className="arbitrage-details">
-                <span>
-                  Gross: <span className={isProfitable ? 'profit-positive' : ''}>
-                    {formatPercent(opp.gross_profit_pct)}
-                  </span>
-                </span>
-                <span>
-                  Fees: <span className="profit-negative">
-                    -{opp.fee_cost_pct?.toFixed(4)}%
-                  </span>
-                </span>
-                <span>
-                  Net: <span className={isProfitable ? 'profit-positive' : 'profit-negative'}>
-                    {formatPercent(opp.net_profit_pct)}
-                  </span>
-                </span>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+    <div className="panel panel-arb">
+      <div className="panel-head">
+        <span className="panel-label">ARB SIGNALS</span>
+        <span className={`panel-sub ${opportunities?.length ? 'accent' : ''}`}>
+          {opportunities?.length ? `${opportunities.length} cycle${opportunities.length > 1 ? 's' : ''}` : 'Bellman-Ford'}
+        </span>
+      </div>
+      <div className="arb-scroll">
+        {!opportunities?.length
+          ? <div className="empty-state">No cycles detected</div>
+          : opportunities.map((opp, i) => {
+              const ok = opp.net_profit_pct > 0;
+              return (
+                <div key={i} className={`arb-card ${ok ? 'ok' : 'bad'}`}>
+                  <div className="chain">
+                    {opp.path.map((coin, idx) => (
+                      <React.Fragment key={idx}>
+                        <span className="node">{coin}</span>
+                        {idx < opp.path.length - 1 && <span className="edge">→</span>}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                  <div className="arb-row">
+                    <div className="arb-col">
+                      <span className="ak">GROSS</span>
+                      <span className="av">{pct(opp.gross_profit_pct)}</span>
+                    </div>
+                    <div className="arb-col">
+                      <span className="ak">FEES</span>
+                      <span className="av dim">−{opp.fee_cost_pct?.toFixed(4)}%</span>
+                    </div>
+                    <div className="arb-col">
+                      <span className="ak">NET</span>
+                      <span className={`av ${ok ? 'g' : 'r'}`}>{pct(opp.net_profit_pct)}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+        }
+      </div>
     </div>
   );
 }
+
+// ─── Algorithm Log ───────────────────────────────────────────────────────────
 
 function AlgorithmLog({ logs }) {
-  const scrollRef = useRef(null);
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [logs]);
-
-  if (!logs || logs.length === 0) {
-    return (
-      <div className="panel">
-        <h2 className="panel-header">Algorithm Log</h2>
-        <div className="empty-state">No algorithm runs yet...</div>
-      </div>
-    );
-  }
+  const ref = useRef(null);
+  useEffect(() => { if (ref.current) ref.current.scrollTop = ref.current.scrollHeight; }, [logs]);
 
   return (
-    <div className="panel">
-      <h2 className="panel-header">Algorithm Log</h2>
-      <div className="algorithm-log" ref={scrollRef}>
-        {logs.map((log, index) => (
-          <div key={index} className="log-entry">
-            <span className="log-timestamp">{log.timestamp}</span>
-            <span className="log-edges">{log.edges_checked} edges</span>
-            {log.cycle_found ? (
-              <span className="log-cycle-found">CYCLE FOUND</span>
-            ) : (
-              <span className="log-cycle-not-found">no cycle</span>
-            )}
-            {log.relaxed_edges && log.relaxed_edges.length > 0 && (
-              <span className="log-relaxed">
-                relaxed: {log.relaxed_edges.slice(0, 5).join(', ')}
-                {log.relaxed_edges.length > 5 && ` +${log.relaxed_edges.length - 5} more`}
-              </span>
-            )}
-          </div>
-        ))}
+    <div className="panel panel-algo">
+      <div className="panel-head">
+        <span className="panel-label">ALGORITHM LOG</span>
+        <span className="panel-sub">{logs?.length ?? 0} runs</span>
+      </div>
+      <div className="algo-log" ref={ref}>
+        {!logs?.length
+          ? <div className="empty-state">No runs yet…</div>
+          : logs.map((log, i) => (
+              <div key={i} className="log-row">
+                <span className="lts">{log.timestamp}</span>
+                <span className="le">{log.edges_checked}e</span>
+                {log.cycle_found
+                  ? <span className="lbadge lhit">● CYCLE</span>
+                  : <span className="lbadge lmiss">○</span>
+                }
+                {log.relaxed_edges?.length > 0 && (
+                  <span className="lr">
+                    {log.relaxed_edges.slice(0, 4).join(' ')}
+                    {log.relaxed_edges.length > 4 && ` +${log.relaxed_edges.length - 4}`}
+                  </span>
+                )}
+              </div>
+            ))
+        }
       </div>
     </div>
   );
 }
+
+// ─── Portfolio ───────────────────────────────────────────────────────────────
 
 function PortfolioTracker({ portfolio }) {
-  const formatCurrency = (value) => {
-    if (value === undefined || value === null) return '$0.00';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(value);
-  };
-
-  const formatPercent = (value) => {
-    if (value === undefined || value === null) return '0.00%';
-    return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
-  };
-
-  const formatPath = (path) => {
-    if (!path || path.length === 0) return '';
-    return path.join('->');
-  };
-
-  if (!portfolio) {
-    return (
-      <div className="panel">
-        <h2 className="panel-header">Portfolio Tracker</h2>
-        <div className="empty-state">Waiting for data...</div>
-      </div>
-    );
-  }
-
-  const isPnlPositive = portfolio.total_pnl_usd >= 0;
+  const usd = (v) => v == null ? '$0.00'
+    : new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v);
+  const pct = (v) => v == null ? '0.00%' : `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`;
 
   return (
-    <div className="panel">
-      <h2 className="panel-header">Portfolio Tracker</h2>
-
-      <div className="portfolio-balance">
-        {formatCurrency(portfolio.current_balance)}
+    <div className="panel panel-port">
+      <div className="panel-head">
+        <span className="panel-label">PORTFOLIO</span>
+        <span className="panel-sub">sim $10k</span>
       </div>
+      {!portfolio
+        ? <div className="empty-state">Awaiting data…</div>
+        : <>
+            <div className="p-balance">{usd(portfolio.current_balance)}</div>
+            <div className={`p-pnl ${portfolio.total_pnl_usd >= 0 ? 'g' : 'r'}`}>
+              {usd(portfolio.total_pnl_usd)}&ensp;/&ensp;{pct(portfolio.total_pnl_pct)}
+            </div>
 
-      <div className={`portfolio-pnl ${isPnlPositive ? 'profit-positive' : 'profit-negative'}`}>
-        {formatCurrency(portfolio.total_pnl_usd)} ({formatPercent(portfolio.total_pnl_pct)})
-      </div>
+            <div className="p-kpis">
+              <div className="kpi">
+                <span className="kv">{portfolio.total_trades}</span>
+                <span className="kk">TRADES</span>
+              </div>
+              <div className="kd" />
+              <div className="kpi">
+                <span className="kv">{portfolio.win_rate}%</span>
+                <span className="kk">WIN RATE</span>
+              </div>
+              <div className="kd" />
+              <div className="kpi">
+                <span className="kv">{portfolio.winning_trades}</span>
+                <span className="kk">WINS</span>
+              </div>
+            </div>
 
-      <div className="portfolio-stats">
-        <div className="stat-item">
-          <span className="stat-value">{portfolio.total_trades}</span> trades
-        </div>
-        <div className="stat-item">
-          <span className="stat-value">{portfolio.win_rate}%</span> win rate
-        </div>
-        <div className="stat-item">
-          <span className="stat-value">{portfolio.winning_trades}</span> wins
-        </div>
-      </div>
-
-      {portfolio.recent_trades && portfolio.recent_trades.length > 0 && (
-        <div className="trades-section">
-          <div className="trades-title">Recent Trades</div>
-          <div className="trades-scroll-container" style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
-            <table className="trades-table">
-              <thead>
-                <tr>
-                  <th>Time</th>
-                  <th>Path</th>
-                  <th>P/L</th>
-                </tr>
-              </thead>
-              <tbody>
-                {portfolio.recent_trades.slice().reverse().map((trade, index) => (
-                  <tr key={index}>
-                    <td>{trade.timestamp}</td>
-                    <td>{formatPath(trade.path)}</td>
-                    <td className={trade.usd_gained >= 0 ? 'profit' : 'loss'}>
-                      {trade.usd_gained >= 0 ? '+' : ''}{formatCurrency(trade.usd_gained)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+            {portfolio.recent_trades?.length > 0 && (
+              <>
+                <div className="t-hd">EXECUTIONS</div>
+                <div className="t-list">
+                  {portfolio.recent_trades.slice().reverse().map((t, i) => {
+                    const ts = t.timestamp?.includes('T')
+                      ? t.timestamp.split('T')[1]?.slice(0, 8)
+                      : t.timestamp;
+                    return (
+                      <div key={i} className="t-row">
+                        <span className="tt">{ts}</span>
+                        <span className="tp">{t.path?.join('→')}</span>
+                        <span className={`tpnl ${t.usd_gained >= 0 ? 'g' : 'r'}`}>
+                          {t.usd_gained >= 0 ? '+' : ''}{usd(t.usd_gained)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </>
+      }
     </div>
   );
 }
 
+// ─── App Root ────────────────────────────────────────────────────────────────
+
 function App() {
-  const [data, setData] = useState(null);
+  const [data,      setData]      = useState(null);
   const [connected, setConnected] = useState(false);
-  const [previousRates, setPreviousRates] = useState({});
+  const [prevRates, setPrevRates] = useState({});
+  const [ticks,     setTicks]     = useState(0);
   const wsRef = useRef(null);
 
   useEffect(() => {
-    const connectWebSocket = () => {
-      // Dynamically use the current hostname so this works perfectly on local networks or simple port forwards
-      const host = window.location.hostname;
-      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const ws = new WebSocket(`${wsProtocol}//${host}:8000/ws/live`);
+    const connect = () => {
+      const host  = window.location.hostname;
+      const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const ws    = new WebSocket(`${proto}//${host}:8000/ws/live`);
       wsRef.current = ws;
-
       ws.onopen = () => {
-        console.log('WebSocket connected');
+        // Reset portfolio at the start of every new session
+        fetch(`http://${host}:8000/api/portfolio/reset`, { method: 'POST' })
+          .catch(() => {}); // silently ignore if backend not ready
         setConnected(true);
       };
-
-      ws.onmessage = (event) => {
-        const newData = JSON.parse(event.data);
-
-        // Store previous rates for change detection
-        setData(prevData => {
-          if (prevData?.rates) {
-            setPreviousRates(prevData.rates);
-          }
-          return newData;
-        });
+      ws.onmessage = (e) => {
+        const next = JSON.parse(e.data);
+        setData(prev => { if (prev?.rates) setPrevRates(prev.rates); return next; });
+        setTicks(n => n + 1);
       };
-
-      ws.onclose = () => {
-        console.log('WebSocket disconnected');
-        setConnected(false);
-        // Attempt to reconnect after 3 seconds
-        setTimeout(connectWebSocket, 3000);
-      };
-
-      ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        ws.close();
-      };
+      ws.onclose = () => { setConnected(false); setTimeout(connect, 3000); };
+      ws.onerror = () => ws.close();
     };
-
-    connectWebSocket();
-
-    return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
-    };
+    connect();
+    return () => wsRef.current?.close();
   }, []);
+
+  const currencies = data?.currencies || [];
+  const now = data?.timestamp
+    ? new Date(data.timestamp).toLocaleTimeString('en-US', { hour12: false })
+    : '--:--:--';
 
   return (
     <div className="app">
-      <header className="app-header">
-        <h1>Cryptocurrency Arbitrage Detection</h1>
-        <div className={`connection-status ${connected ? 'connected' : 'disconnected'}`}>
-          {connected ? 'Live' : 'Disconnected'}
+      <header className="hdr">
+        <div className="hdr-amber-bar" />
+        <div className="hdr-inner">
+          <div className="hdr-l">
+            <span className="hdr-mark">◈</span>
+            <div>
+              <h1 className="hdr-title">CRYPTO ARBITRAGE</h1>
+              <p className="hdr-sub">Real-Time Bellman-Ford Detection System</p>
+            </div>
+          </div>
+          <div className="hdr-r">
+            <div className="hdr-ticks">
+              <span className="tick-n">{ticks}</span>
+              <span className="tick-k">TICKS</span>
+            </div>
+            <div className="hdr-sep" />
+            <div className={`hdr-status ${connected ? 'on' : 'off'}`}>
+              <span className="sdot" />
+              <span>{connected ? 'LIVE' : 'OFFLINE'}</span>
+            </div>
+            <div className="hdr-sep" />
+            <div className="hdr-clock">{now}</div>
+          </div>
         </div>
+        <div className="hdr-rule" />
       </header>
 
-      <main className="dashboard">
-        <div className="dashboard-columns">
-          <div className="dashboard-column left-column">
-            <RateTable
-              rates={data?.rates}
-              currencies={data?.currencies}
-              previousRates={previousRates}
-              activeCycle={data?.arbitrage?.active_cycle || []}
-            />
-            <AlgorithmLog
-              logs={data?.algorithm_log || []}
-            />
-          </div>
-          <div className="dashboard-column right-column">
-            <ArbitragePanel
-              opportunities={data?.arbitrage?.opportunities || []}
-            />
-            <PortfolioTracker
-              portfolio={data?.portfolio}
-            />
-          </div>
-        </div>
+      <main className="mgrid">
+        <RateTable
+          rates={data?.rates}
+          currencies={currencies}
+          previousRates={prevRates}
+          activeCycle={data?.arbitrage?.active_cycle || []}
+        />
+        <AlgorithmLog logs={data?.algorithm_log || []} />
+        <ArbitragePanel opportunities={data?.arbitrage?.opportunities || []} />
+        <PortfolioTracker portfolio={data?.portfolio} />
       </main>
     </div>
   );
