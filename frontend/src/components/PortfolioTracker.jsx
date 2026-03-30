@@ -2,55 +2,43 @@ import React from "react";
 
 export default function PortfolioTracker({ portfolio }) {
   const fmtUSD = v =>
-    v === undefined || v === null
-      ? "$0.00"
-      : new Intl.NumberFormat("en-US", {
-          style: "currency", currency: "USD",
-          minimumFractionDigits: 2, maximumFractionDigits: 2,
-        }).format(v);
+    v == null ? "$0.00"
+    : new Intl.NumberFormat("en-US", {
+        style: "currency", currency: "USD",
+        minimumFractionDigits: 2, maximumFractionDigits: 2,
+      }).format(v);
 
   const fmtPct = v =>
-    v === undefined || v === null
-      ? "0.00%"
-      : `${v >= 0 ? "+" : ""}${v.toFixed(2)}%`;
-
-  const fmtPath = path =>
-    !path?.length ? "—" : path.join(" → ");
+    v == null ? "0.00%" : `${v >= 0 ? "+" : ""}${v.toFixed(2)}%`;
 
   if (!portfolio) {
     return (
-      <div className="panel panel-portfolio">
-        <div className="panel-header">
-          Portfolio Tracker
-          <span className="panel-tag neutral">Connecting…</span>
-        </div>
-        <div className="empty-state">Waiting for data…</div>
+      <div className="panel">
+        <div className="panel-header">Portfolio</div>
+        <div className="empty-state">Awaiting data…</div>
       </div>
     );
   }
 
-  const isPnlPos = portfolio.total_pnl_usd >= 0;
+  const pos = portfolio.total_pnl_usd >= 0;
 
   return (
-    <div className="panel panel-portfolio">
+    <div className="panel">
       <div className="panel-header">
-        Portfolio Tracker
-        <span className={`panel-tag ${isPnlPos ? "accent" : "danger"}`}>
+        Portfolio
+        <span className={`panel-tag ${pos ? "go" : "signal"}`}>
           {fmtPct(portfolio.total_pnl_pct)}
         </span>
       </div>
 
-      {/* Balance */}
       <div className="portfolio-balance">
         {fmtUSD(portfolio.current_balance)}
       </div>
 
-      {/* P&L pill */}
-      <div className={`portfolio-pnl ${isPnlPos ? "profit-positive" : "profit-negative"}`}>
-        {fmtUSD(portfolio.total_pnl_usd)}&nbsp;&nbsp;{fmtPct(portfolio.total_pnl_pct)}
+      <div className={`portfolio-pnl ${pos ? "profit-positive" : "profit-negative"}`}>
+        {fmtUSD(portfolio.total_pnl_usd)} &nbsp; {fmtPct(portfolio.total_pnl_pct)}
       </div>
 
-      {/* Stats grid */}
       <div className="portfolio-stats">
         <div className="stat-item">
           <span className="stat-label">Trades</span>
@@ -66,7 +54,6 @@ export default function PortfolioTracker({ portfolio }) {
         </div>
       </div>
 
-      {/* Recent trades */}
       {portfolio.recent_trades?.length > 0 && (
         <div className="trades-section">
           <div className="trades-title">Recent Trades</div>
@@ -82,11 +69,11 @@ export default function PortfolioTracker({ portfolio }) {
               <tbody>
                 {[...portfolio.recent_trades].reverse().map((trade, i) => (
                   <tr key={i}>
-                    <td style={{ color: "var(--t3)", whiteSpace: "nowrap" }}>
+                    <td style={{ color: "var(--ink-4)", whiteSpace: "nowrap" }}>
                       {trade.timestamp}
                     </td>
-                    <td style={{ color: "var(--t2)", fontSize: 10 }}>
-                      {fmtPath(trade.path)}
+                    <td style={{ color: "var(--ink-3)", fontSize: 9 }}>
+                      {trade.path?.join(" → ")}
                     </td>
                     <td className={trade.usd_gained >= 0 ? "profit" : "loss"}>
                       {trade.usd_gained >= 0 ? "+" : ""}

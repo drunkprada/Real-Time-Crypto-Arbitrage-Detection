@@ -5,23 +5,23 @@ import {
   CartesianGrid, ReferenceLine
 } from "recharts";
 
-const CustomTooltip = ({ active, payload, label }) => {
+const Tip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
-  const val = payload[0].value;
-  const pos = val >= 0;
+  const v   = payload[0].value;
+  const pos = v >= 0;
   return (
     <div style={{
-      background: "#1a1c20",
-      border: "1px solid #2a2d35",
-      borderRadius: 5,
-      padding: "6px 10px",
-      fontFamily: "'IBM Plex Mono', monospace",
+      background: "#f2efe8",
+      border: "1px solid rgba(15,14,12,0.35)",
+      padding: "5px 10px",
+      fontFamily: "'Geist Mono', monospace",
       fontSize: 10,
       lineHeight: 1.6,
+      color: "#3a3830",
     }}>
-      <div style={{ color: "#484d57", marginBottom: 2 }}>{label}</div>
-      <div style={{ color: pos ? "#00d4aa" : "#ff4d6a", fontWeight: 600 }}>
-        {pos ? "+" : ""}${val.toFixed(2)}
+      <div style={{ color: "#b8b2a4", marginBottom: 1 }}>{label}</div>
+      <div style={{ color: pos ? "#1a6b3c" : "#c8402a", fontWeight: 500 }}>
+        {pos ? "+" : ""}${v.toFixed(2)}
       </div>
     </div>
   );
@@ -30,63 +30,64 @@ const CustomTooltip = ({ active, payload, label }) => {
 export default function ProfitChart({ history }) {
   const latest = history.at(-1)?.pnl ?? 0;
   const isPos  = latest >= 0;
-  const tag    = `${isPos ? "+" : ""}$${latest.toFixed(2)}`;
 
-  if (!history || history.length === 0) {
+  if (!history?.length) {
     return (
-      <div className="panel panel-chart">
+      <div className="panel">
         <div className="panel-header">
-          Profit Over Time
-          <span className="panel-tag neutral">Awaiting data</span>
+          P&L Over Time
+          <span className="panel-tag">No data</span>
         </div>
-        <div className="empty-state">No data yet…</div>
+        <div className="empty-state">Awaiting trades…</div>
       </div>
     );
   }
 
   return (
-    <div className="panel panel-chart">
+    <div className="panel">
       <div className="panel-header">
-        Profit Over Time
-        <span className={`panel-tag ${isPos ? "accent" : "danger"}`}>{tag}</span>
+        P&L Over Time
+        <span className={`panel-tag ${isPos ? "go" : "signal"}`}>
+          {isPos ? "+" : ""}${latest.toFixed(2)}
+        </span>
       </div>
       <div className="profit-chart-inner">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={history} margin={{ top: 4, right: 2, left: -18, bottom: 0 }}>
+          <AreaChart data={history} margin={{ top: 4, right: 4, left: -12, bottom: 0 }}>
             <defs>
-              <linearGradient id="pnlGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%"  stopColor={isPos ? "#00d4aa" : "#ff4d6a"} stopOpacity={0.18} />
-                <stop offset="95%" stopColor={isPos ? "#00d4aa" : "#ff4d6a"} stopOpacity={0} />
+              <linearGradient id="pnlFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"   stopColor={isPos ? "#1a6b3c" : "#c8402a"} stopOpacity={0.12} />
+                <stop offset="100%" stopColor={isPos ? "#1a6b3c" : "#c8402a"} stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid
-              strokeDasharray="4 4"
-              stroke="rgba(255,255,255,0.04)"
+              strokeDasharray="2 4"
+              stroke="rgba(15,14,12,0.07)"
               vertical={false}
             />
             <XAxis
               dataKey="time"
-              tick={{ fontSize: 8.5, fill: "#484d57", fontFamily: "'IBM Plex Mono', monospace" }}
+              tick={{ fontSize: 8, fill: "#b8b2a4", fontFamily: "'Geist Mono', monospace" }}
               tickLine={false}
-              axisLine={false}
+              axisLine={{ stroke: "rgba(15,14,12,0.15)" }}
               interval="preserveStartEnd"
             />
             <YAxis
-              tick={{ fontSize: 8.5, fill: "#484d57", fontFamily: "'IBM Plex Mono', monospace" }}
+              tick={{ fontSize: 8, fill: "#b8b2a4", fontFamily: "'Geist Mono', monospace" }}
               tickLine={false}
               axisLine={false}
               tickFormatter={v => `$${v}`}
             />
-            <ReferenceLine y={0} stroke="#2a2d35" strokeDasharray="3 3" />
-            <Tooltip content={<CustomTooltip />} />
+            <ReferenceLine y={0} stroke="rgba(15,14,12,0.2)" strokeDasharray="4 4" />
+            <Tooltip content={<Tip />} />
             <Area
               type="monotone"
               dataKey="pnl"
-              stroke={isPos ? "#00d4aa" : "#ff4d6a"}
+              stroke={isPos ? "#1a6b3c" : "#c8402a"}
               strokeWidth={1.5}
-              fill="url(#pnlGrad)"
+              fill="url(#pnlFill)"
               dot={false}
-              activeDot={{ r: 3, strokeWidth: 0, fill: isPos ? "#00d4aa" : "#ff4d6a" }}
+              activeDot={{ r: 3, strokeWidth: 0, fill: isPos ? "#1a6b3c" : "#c8402a" }}
             />
           </AreaChart>
         </ResponsiveContainer>

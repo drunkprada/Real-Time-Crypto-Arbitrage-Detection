@@ -7,7 +7,6 @@ export default function RateTable({ rates, currencies, previousRates, activeCycl
   useEffect(() => {
     if (!rates || !previousRates || !currencies) return;
     const newChanges = {};
-
     currencies.forEach(from => {
       currencies.forEach(to => {
         if (from === to) return;
@@ -19,11 +18,10 @@ export default function RateTable({ rates, currencies, previousRates, activeCycl
           if (timeoutRefs.current[key]) clearTimeout(timeoutRefs.current[key]);
           timeoutRefs.current[key] = setTimeout(() => {
             setChangedCells(p => { const u = { ...p }; delete u[key]; return u; });
-          }, 700);
+          }, 800);
         }
       });
     });
-
     if (Object.keys(newChanges).length > 0)
       setChangedCells(p => ({ ...p, ...newChanges }));
   }, [rates, previousRates, currencies]);
@@ -37,38 +35,37 @@ export default function RateTable({ rates, currencies, previousRates, activeCycl
     return activeCycle.at(-1) === from && activeCycle[0] === to;
   };
 
-  const formatRate = (rate) => {
+  const formatRate = rate => {
     if (!rate) return "—";
-    if (rate >= 10000)  return rate.toFixed(0);
-    if (rate >= 1000)   return rate.toFixed(1);
-    if (rate >= 1)      return rate.toFixed(4);
-    if (rate >= 0.001)  return rate.toFixed(6);
+    if (rate >= 10000) return rate.toFixed(0);
+    if (rate >= 1000)  return rate.toFixed(1);
+    if (rate >= 1)     return rate.toFixed(4);
+    if (rate >= 0.001) return rate.toFixed(6);
     return rate.toExponential(3);
   };
 
   if (!currencies || !rates) {
     return (
-      <div className="panel panel-rate">
-        <div className="panel-header">
-          Live Exchange Rates
-          <span className="panel-tag neutral">Connecting…</span>
-        </div>
-        <div className="empty-state">Waiting for feed…</div>
+      <div className="panel">
+        <div className="panel-header">Live Exchange Rates</div>
+        <div className="empty-state">Awaiting feed…</div>
       </div>
     );
   }
 
   return (
-    <div className="panel panel-rate">
+    <div className="panel">
       <div className="panel-header">
         Live Exchange Rates
-        <span className="panel-tag neutral">{currencies.length} assets · {currencies.length * (currencies.length - 1)} pairs</span>
+        <span className="panel-tag">
+          {currencies.length} × {currencies.length} matrix
+        </span>
       </div>
       <div className="rate-table-container">
         <table className="rate-table">
           <thead>
             <tr>
-              <th></th>
+              <th>From \ To</th>
               {currencies.map(c => <th key={c}>{c}</th>)}
             </tr>
           </thead>
@@ -77,16 +74,15 @@ export default function RateTable({ rates, currencies, previousRates, activeCycl
               <tr key={from}>
                 <td>{from}</td>
                 {currencies.map(to => {
-                  const isSelf = from === to;
-                  const key    = `${from}-${to}`;
-                  const inArb  = !isSelf && isInArb(from, to);
+                  const isSelf  = from === to;
+                  const key     = `${from}-${to}`;
+                  const inArb   = !isSelf && isInArb(from, to);
                   const changed = !isSelf && changedCells[key];
-                  const cls = [
+                  const cls     = [
                     isSelf  ? "self"           : "",
                     changed ? "changed"         : "",
                     inArb   ? "arbitrage-cell"  : "",
                   ].filter(Boolean).join(" ");
-
                   return (
                     <td key={to} className={cls}>
                       {isSelf ? "1.0000" : formatRate(rates[from]?.[to])}
