@@ -3,48 +3,102 @@ import { useEffect, useRef, useState } from "react";
 export default function useWebSocket() {
   const [data, setData] = useState(null);
   const [connected, setConnected] = useState(false);
+  const [loading, setLoading] = useState(true);
+
   const wsRef = useRef(null);
+  const retryRef = useRef(0);
+
+  const getWSUrl = () => {
+    if (window.location.hostname === "localhost") {
+      return "ws://localhost:8000/ws/live";
+    }
+    return "wss://crypto-arbitrage-detection-uhl3.onrender.com/ws/live";
+  };
+
+  const getAPIUrl = () => {
+    return "https://crypto-arbitrage-detection-uhl3.onrender.com/api/rates";
+  };
 
   useEffect(() => {
-    const getWebSocketURL = () => {
-      // local dev
-      if (window.location.hostname === "localhost") {
-        return "ws://localhost:8000/ws/live";
-      }
+    let isMounted = true;
 
-      // production (Render)
-      return "wss://crypto-arbitrage-detection-uhl3.onrender.com/ws/live";
+    const fetchFallback = async () => {
+      try {
+        const res = await fetch(getAPIUrl());
+        const json = await res.json();
+        if (isMounted) {
+          console.log("Using REST fallback");
+          setData(json);
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error("Fallback failed:", err);
+      }
     };
 
     const connect = () => {
-      const ws = new WebSocket(getWebSocketURL());
-      wsRef.current = ws;
+      const url = getWSUrl();
+      console.log("Connecting to WS:", url);
 
-      ws.onopen = () => {
-        console.log("WS connected");
-        setConnected(true);
-      };
+      try {
+        const ws = new WebSocket(url);
+        wsRef.current = ws;
 
-      ws.onmessage = (event) => {
-        setData(JSON.parse(event.data));
-      };
+        ws.onopen = () => {
+          console.log("✅ WS connected");
+          retryRef.current = 0;
+          if (isMounted) {
+            setConnected(true);
+            setLoading(false);
+          }
+        };
 
-      ws.onclose = () => {
-        console.log("WS disconnected, retrying...");
-        setConnected(false);
-        setTimeout(connect, 3000);
-      };
+        ws.onmessage = (event) => {
+          try {
+            const parsed = JSON.parse(event.data);
+            if (isMounted) setData(parsed);
+          } catch (e) {
+            console.warn("⚠️ Invalid WS data (likely HTML):", event.data);
+          }
+        };
 
-      ws.onerror = (err) => {
-        console.error("WS error:", err);
-        ws.close();
-      };
+        ws.onclose = () => {
+          console.log("❌ WS closed");
+
+          if (isMounted) setConnected(false);
+
+          retryRef.current += 1;
+
+          const delay = Math.min(1000 * 2 ** retryRef.current, 10000);
+
+          console.log(`Retrying in ${delay / 1000}s...`);
+
+          setTimeout(() => {
+            connect();
+          }, delay);
+
+          if (retryRef.current >= 2) {
+            fetchFallback();
+          }
+        };
+
+        ws.onerror = (err) => {
+          console.error("WS error:", err);
+          ws.close();
+        };
+
+      } catch (err) {
+        console.error("WS init failed:", err);
+      }
     };
 
-    connect();
+    setTimeout(connect, 1500);
 
-    return () => wsRef.current?.close();
+    return () => {
+      isMounted = false;
+      wsRef.current?.close();
+    };
   }, []);
 
-  return { data, connected };
+  return { data, connected, loading };
 }
