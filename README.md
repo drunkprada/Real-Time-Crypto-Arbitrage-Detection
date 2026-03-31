@@ -2,6 +2,10 @@
 
 A full-stack academic project demonstrating real-time cryptocurrency arbitrage detection using the **Bellman-Ford algorithm**. The system simulates live exchange rates, detects profitable trading cycles, and tracks portfolio performance.
 
+## Live Demo
+Frontend: https://real-time-crypto-arbitrage-detectio-two.vercel.app  
+Backend: https://crypto-arbitrage-detection-uhl3.onrender.com
+
 ## Architecture
 
 ![System Design Architecture](system%20design.jpeg)
